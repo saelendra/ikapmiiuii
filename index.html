@@ -1,143 +1,1901 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IKAPMII UII - Ikatan Alumni PMII Komisariat Wahid Hasyim UII</title>
-    <style>
-        :root {
-            --primary-color: #0d5c3f;
-            --accent-color: #f39c12;
-            --light-bg: #f9f9f9;
-            --text-color: #333;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        header h1 {
-            font-size: 1.2rem;
-            margin: 0;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            font-weight: 500;
-        }
-        nav a:hover {
-            color: var(--accent-color);
-        }
-        .hero {
-            background: linear-gradient(rgba(13, 92, 63, 0.85), rgba(13, 92, 63, 0.85)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80') no-repeat center center/cover;
-            color: white;
-            text-align: center;
-            padding: 5rem 1rem;
-        }
-        .hero h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        .hero p {
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto 2rem auto;
-        }
-        .btn {
-            background-color: var(--accent-color);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .btn:hover {
-            background-color: #d68910;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 3rem auto;
-            padding: 0 1rem;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        .card {
-            background: var(--light-bg);
-            border: 1px solid #ddd;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .card h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-        footer {
-            background-color: #222;
-            color: white;
-            text-align: center;
-            padding: 1.5rem;
-            margin-top: 3rem;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
+import React, { useState, useMemo } from 'react';
 
-    <header>
-        <h1>IKAPMII UII</h1>
-        <nav>
-            <a href="#">Beranda</a>
-            <a href="#fitur">Tentang</a>
-            <a href="#kontak">Kontak</a>
-        </nav>
-    </header>
+// --- MOCK DATA ---
+const INITIAL_AKUN = [
+  { id: 1, username: 'admin', password: 'pmii123', alumniId: 1, role: 'admin' },
+  { id: 2, username: 'faisal', password: 'pmii123', alumniId: 1, role: 'admin' },
+  { id: 3, username: 'citra', password: 'pmii123', alumniId: 2, role: 'user' },
+  { id: 4, username: 'rahmat', password: 'pmii123', alumniId: 9, role: 'user' }, // Pending user demo
+];
 
-    <section class="hero">
-        <h2>Selamat Datang di Portal Alumni IKAPMII UII</h2>
-        <p>Menjalin Silaturahmi, Memperkuat Kolaborasi, Mengabdikan Diri untuk Negeri.</p>
-        <a href="#fitur" class="btn">Jelajahi Portal</a>
-    </section>
+const INITIAL_ALUMNI = [
+  { 
+    id: 1, 
+    nama: 'Ahmad Faisal, S.H.', 
+    angkatan: '2019', 
+    korp: 'Hukum', 
+    alamat: 'Jl. Kaliurang KM 14, Besi, Sleman, Yogyakarta', 
+    lat: -7.6872, 
+    lng: 110.4144, 
+    noWa: '6281234567890', 
+    foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+    status: 'approved'
+  },
+  { 
+    id: 2, 
+    nama: 'Citra Kirana, S.E.', 
+    angkatan: '2018', 
+    korp: 'Ekonomi', 
+    alamat: 'Jl. Gejayan No. 12, Depok, Sleman, Yogyakarta', 
+    lat: -7.7712, 
+    lng: 110.3875, 
+    noWa: '6289876543210', 
+    foto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=300',
+    status: 'approved'
+  },
+  { 
+    id: 3, 
+    nama: 'Dani Ramadhan, S.T.', 
+    angkatan: '2017', 
+    korp: 'Teknik', 
+    alamat: 'Maguwoharjo, Depok, Sleman, Yogyakarta', 
+    lat: -7.7654, 
+    lng: 110.4321, 
+    noWa: '6285551234567', 
+    foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
+    status: 'approved'
+  },
+  { 
+    id: 4, 
+    nama: 'Eka Saputra, S.Sos.', 
+    angkatan: '2020', 
+    korp: 'Agama Islam', 
+    alamat: 'Ngemplak, Sleman, Yogyakarta', 
+    lat: -7.7011, 
+    lng: 110.4489, 
+    noWa: '6281112223334', 
+    foto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
+    status: 'approved'
+  },
+  { 
+    id: 5, 
+    nama: 'Fatimah Az-Zahra, M.Psi.', 
+    angkatan: '2019', 
+    korp: 'Psikologi', 
+    alamat: 'Condongcatur, Depok, Sleman, Yogyakarta', 
+    lat: -7.7551, 
+    lng: 110.4022, 
+    noWa: '6289998887776', 
+    foto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300',
+    status: 'approved'
+  },
+  { 
+    id: 9, 
+    nama: 'Rahmat Hidayat, S.H.', 
+    angkatan: '2021', 
+    korp: 'Hukum', 
+    alamat: 'Jl. Solo KM 9, Maguwoharjo, Sleman', 
+    lat: -7.7821, 
+    lng: 110.4288, 
+    noWa: '6281239990001', 
+    foto: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=300',
+    status: 'pending' // Demo pending registration for admin verification
+  }
+];
 
-    <div class="container" id="fitur">
-        <div class="features">
-            <div class="card">
-                <h3>Direktori Alumni</h3>
-                <p>Pangkalan data persebaran kader dan alumni PMII Komisariat Wahid Hasyim UII di berbagai sektor profesi.</p>
-            </div>
-            <div class="card">
-                <h3>Transparansi Donasi</h3>
-                <p>Informasi berkala terkait pengelolaan kas, dana sosial, dan kontribusi finansial secara akuntabel.</p>
-            </div>
-            <div class="card">
-                <h3>Agenda & Kegiatan</h3>
-                <p>Informasi seputar reuni, forum diskusi, kaderisasi lanjutan, serta agenda strategis ikatan.</p>
-            </div>
-        </div>
+const INITIAL_KETUA = [
+  { 
+    id: 1, 
+    periode: '2025 - 2026', 
+    nama: 'M. Zidan Al-Farisi', 
+    status: 'Menjabat', 
+    korp: 'Teknik',
+    noWa: '6281298765432',
+    motto: 'Mewujudkan Kader Militan, Progresif, dan Berintegritas.',
+    foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
+    prestasi: ['Juara Umum Lomba Karya Tulis Ilmiah Nasional', 'Pengembangan Digitalisasi Database Komisariat', 'Peningkatan Kaderisasi Anggota Baru 150%'],
+    proker: ['Sekolah Kader Literasi Digital', 'Ekspedisi Desa Binaan Berkelanjutan', 'Bursa Karir dan Job Fair Alumni']
+  },
+  { 
+    id: 2, 
+    periode: '2024 - 2025', 
+    nama: 'Rizki Amelia, S.E.', 
+    status: 'Demisioner', 
+    korp: 'Ekonomi',
+    noWa: '6281387654321',
+    motto: 'Pergerakan Berkelanjutan Berlandaskan Nilai Ahlussunnah wal Jamaah.',
+    foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
+    prestasi: ['Penyusunan Modul Kaderisasi Resmi Komisariat', 'Pendirian Koperasi Sahabat Wahid Hasyim'],
+    proker: ['Pelatihan Kewirausahaan Pemuda', 'Kajian Rutin Aswaja Bulanan']
+  },
+  { 
+    id: 3, 
+    periode: '2023 - 2024', 
+    nama: 'Ahmad Hasanudin, S.H.', 
+    status: 'Alumni', 
+    korp: 'Hukum',
+    noWa: '6281234567890',
+    motto: 'Tangan Terkepal dan Maju ke Muka untuk Keadilan Sosial.',
+    foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400',
+    prestasi: ['Pembentukan Posko Bantuan Hukum Mahasiswa', 'Realisasi Gedung Sekretariat Mandiri'],
+    proker: ['Advokasi Kebijakan Publik', 'Pesantren Kilat Mahasiswa Baru']
+  }
+];
+
+const INITIAL_KEUANGAN = [
+  { id: 1, tanggal: '2026-02-01', tipe: 'masuk', keterangan: 'Donasi Alumni Angkatan 2017', nominal: 2500000 },
+  { id: 2, tanggal: '2026-02-05', tipe: 'masuk', keterangan: 'Iuran Wajib Pengurus Komisariat', nominal: 750000 },
+  { id: 3, tanggal: '2026-02-10', tipe: 'keluar', keterangan: 'Biaya Sewa Aula Makrab Tahunan', nominal: 1200000 },
+  { id: 4, tanggal: '2026-02-15', tipe: 'masuk', keterangan: 'Donasi Hamba Allah (Terbuka)', nominal: 1500000 },
+  { id: 5, tanggal: '2026-02-18', tipe: 'keluar', keterangan: 'Konsumsi Rapat Pleno Pengurus', nominal: 350000 },
+  { id: 6, tanggal: '2026-02-20', tipe: 'masuk', keterangan: 'Kontribusi Alumni Angkatan 2019', nominal: 1000000 }
+];
+
+const formatRupiah = (angka) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+};
+
+const formatDate = (dateString) => {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('id-ID', options);
+};
+
+const IconHome = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>;
+const IconUsers = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>;
+const IconAward = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>;
+const IconWallet = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+const IconUserCircle = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>;
+const IconWhatsApp = () => <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>;
+const IconSearch = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>;
+const IconLogout = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>;
+const IconMenu = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>;
+const IconClose = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>;
+const IconBack = () => <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>;
+const IconEdit = () => <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>;
+const IconPlus = () => <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>;
+const IconCheck = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>;
+const IconShieldAlert = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>;
+const IconMapPin = () => <svg className="w-4 h-4 mr-1 text-rose-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>;
+
+// --- CUSTOM LOGO EMBLEM ---
+const LogoEmblem = ({ className = "w-10 h-10" }) => (
+  <div className={`${className} bg-gradient-to-br from-[#0B3B60] to-blue-900 rounded-full flex items-center justify-center border-2 border-[#F2B705] shadow-md relative overflow-hidden flex-shrink-0`}>
+    <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#F2B705_1px,transparent_1px)] [background-size:6px_6px]"></div>
+    <div className="text-center z-10 flex flex-col items-center justify-center">
+      <span className="text-[#F2B705] font-black text-xs tracking-tighter">IKA</span>
+      <span className="text-white font-bold text-[9px] tracking-widest leading-none">PMII</span>
     </div>
+  </div>
+);
 
-    <footer>
-        <p>&copy; 2026 IKAPMII Komisariat Wahid Hasyim UII. All Rights Reserved.</p>
-    </footer>
+// --- GOOGLE MAPS EMBED HELPER ---
+const GoogleMapPreview = ({ lat, lng, height = "h-48" }) => {
+  if (!lat || !lng) return null;
+  const embedUrl = `https://maps.google.com/maps?q=${lat},${lng}&z=14&output=embed`;
+  const mapsLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
-</body>
-</html>
+  return (
+    <div className="w-full space-y-2">
+      <div className={`w-full ${height} rounded-2xl overflow-hidden border border-slate-200 shadow-inner relative bg-slate-100`}>
+        <iframe
+          title="Google Maps Location"
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          scrolling="no"
+          marginHeight="0"
+          marginWidth="0"
+          src={embedUrl}
+        ></iframe>
+      </div>
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-slate-500 font-mono">Lat: {lat.toFixed(4)}, Lng: {lng.toFixed(4)}</span>
+        <a 
+          href={mapsLink} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-[#0B3B60] font-bold hover:underline flex items-center"
+        >
+          <IconMapPin /> Buka di App Google Maps →
+        </a>
+      </div>
+    </div>
+  );
+};
+
+// --- LOGIN COMPONENT ---
+const LoginScreen = ({ onLogin, onSwitchToRegister, errorMsg }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin(username, password);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+      <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        {/* Left Brand Panel */}
+        <div className="bg-[#0B3B60] p-10 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F2B705_2px,transparent_2px)] [background-size:16px_16px]"></div>
+          <div className="relative z-10 flex items-center gap-3">
+            <LogoEmblem className="w-14 h-14" />
+            <div>
+              <h1 className="font-bold text-xl tracking-wide">IKA PMII</h1>
+              <p className="text-xs text-[#F2B705] font-semibold tracking-wider">Wahid Hasyim UII</p>
+            </div>
+          </div>
+          <div className="relative z-10 my-10">
+            <span className="bg-[#F2B705] text-[#0B3B60] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Portal Resmi Alumni & Admin</span>
+            <h2 className="text-3xl font-serif font-bold mt-4 mb-3 leading-tight">Wadah Silaturahmi & Pengabdian Berkelanjutan</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              Verifikasi pendaftaran alumni, integrasi lokasi peta domisili, transparansi kas & donasi, serta sejarah kepemimpinan komisariat.
+            </p>
+          </div>
+          <div className="relative z-10 text-xs text-slate-400">
+            © {new Date().getFullYear()} IKA PMII Komisariat Wahid Hasyim UII.
+          </div>
+        </div>
+
+        {/* Right Form Panel */}
+        <div className="p-8 md:p-12 flex flex-col justify-center">
+          <div className="mb-6">
+            <h3 className="text-2xl font-bold font-serif text-slate-800">Masuk ke Portal</h3>
+            <p className="text-sm text-slate-500 mt-1">Masukkan kredensial akun alumni atau PIC Admin Anda.</p>
+          </div>
+
+          {errorMsg && (
+            <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-sm rounded-2xl flex items-start gap-2.5">
+              <span className="text-rose-500 flex-shrink-0 mt-0.5"><IconShieldAlert /></span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nama Pengguna (Username)</label>
+              <input 
+                type="text" 
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none transition-all"
+                placeholder="Contoh: admin atau faisal"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Kata Sandi (Password)</label>
+              <input 
+                type="password" 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button 
+              type="submit"
+              className="w-full py-3.5 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all transform hover:-translate-y-0.5"
+            >
+              Masuk Sekarang
+            </button>
+          </form>
+
+          {/* Demo account helper */}
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 space-y-1">
+            <p className="font-bold text-amber-950">🔑 Akun Demo Pengujian System:</p>
+            <p><span className="font-bold text-[#0B3B60]">PIC Admin:</span> Username: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono font-bold">admin</code> | Pass: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">pmii123</code></p>
+            <p><span className="font-bold text-slate-700">Alumni Verified:</span> Username: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono font-bold">citra</code> | Pass: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">pmii123</code></p>
+            <p><span className="font-bold text-rose-700">Pendaftar Pending:</span> Username: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono font-bold">rahmat</code> | Pass: <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">pmii123</code></p>
+          </div>
+
+          <div className="mt-6 text-center text-sm text-slate-600">
+            Belum punya akun alumni?{' '}
+            <button 
+              onClick={onSwitchToRegister}
+              className="font-bold text-[#0B3B60] hover:underline"
+            >
+              Daftar di sini
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- REGISTER COMPONENT WITH GOOGLE MAPS PIN & GEOLOCATION ---
+const RegisterScreen = ({ onRegisterSubmitted, onBackToLogin }) => {
+  const [formData, setFormData] = useState({
+    nama: '',
+    angkatan: '',
+    korp: '',
+    noWa: '',
+    alamat: '',
+    lat: -7.6872, // Default Yogyakarta UII region
+    lng: 110.4144,
+    foto: '',
+    username: '',
+    password: ''
+  });
+
+  const [geoStatus, setGeoStatus] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [submittedMsg, setSubmittedMsg] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Geolocation trigger to fetch current GPS coordinates
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      setGeoStatus('Browser Anda tidak mendukung Geolocation.');
+      return;
+    }
+
+    setGeoStatus('Sedang mengambil koordinat lokasi dari GPS...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData(prev => ({
+          ...prev,
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        }));
+        setGeoStatus('✅ Koordinat lokasi berhasil diperbarui dari GPS!');
+      },
+      (error) => {
+        setGeoStatus('Gagal mendapatkan lokasi. Silakan isi koordinat manual atau gunakan nilai standar.');
+      }
+    );
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onRegisterSubmitted(formData, (err) => {
+      if (err) {
+        setErrorMsg(err);
+      } else {
+        setSubmittedMsg('Pendaftaran berhasil diajukan! Data Anda akan diverifikasi oleh PIC Admin sebelum akun dapat aktif.');
+      }
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 py-12">
+      <div className="max-w-3xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden p-8 md:p-12">
+        <div className="flex items-center gap-3 mb-6">
+          <LogoEmblem className="w-12 h-12" />
+          <div>
+            <h2 className="text-2xl font-bold font-serif text-slate-800">Registrasi Pendaftaran Alumni</h2>
+            <p className="text-xs text-slate-500">Lengkapi data diri dan titik peta domisili Google Maps Anda.</p>
+          </div>
+        </div>
+
+        {submittedMsg ? (
+          <div className="p-8 bg-emerald-50 border border-emerald-200 rounded-3xl text-center space-y-4">
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+              ✓
+            </div>
+            <h3 className="text-xl font-bold text-emerald-900 font-serif">Permohonan Registrasi Terkirim!</h3>
+            <p className="text-sm text-emerald-800 max-w-md mx-auto leading-relaxed">
+              {submittedMsg}
+            </p>
+            <div className="pt-4">
+              <button
+                onClick={onBackToLogin}
+                className="px-6 py-3 bg-[#0B3B60] text-white font-bold rounded-xl shadow-md hover:bg-blue-900 transition-colors text-sm"
+              >
+                Kembali ke Hal Muka Login
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {errorMsg && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl">
+                {errorMsg}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Lengkap & Gelar</label>
+                <input 
+                  type="text" 
+                  name="nama"
+                  required
+                  value={formData.nama}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                  placeholder="Contoh: Rahmat Hidayat, S.H."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Angkatan PMII</label>
+                <input 
+                  type="number" 
+                  name="angkatan"
+                  required
+                  value={formData.angkatan}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                  placeholder="Contoh: 2020"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Asal Korp</label>
+                <input 
+                  type="text" 
+                  name="korp"
+                  required
+                  value={formData.korp}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                  placeholder="Contoh: Hukum, Ekonomi..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nomor WhatsApp</label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 text-sm text-slate-600 bg-slate-200 border border-r-0 border-slate-300 rounded-l-xl">+62</span>
+                  <input 
+                    type="tel" 
+                    name="noWa"
+                    required
+                    value={formData.noWa}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-r-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                    placeholder="81234567890"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Address & Google Maps Coordinate Pickers */}
+            <div className="space-y-3 pt-2 border-t border-slate-100">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Alamat Lengkap / Domisili</label>
+                <textarea 
+                  name="alamat"
+                  required
+                  rows="2"
+                  value={formData.alamat}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                  placeholder="Tuliskan nama jalan, kelurahan, kecamatan, kota..."
+                ></textarea>
+              </div>
+
+              {/* Titik Koordinat Google Maps */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center">
+                    <IconMapPin /> Titik Koordinat Google Maps
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleGetLocation}
+                    className="px-3 py-1.5 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold text-xs rounded-lg shadow-sm transition-colors flex items-center gap-1 self-start sm:self-auto"
+                  >
+                    📍 Deteksi GPS Lokasi Saya
+                  </button>
+                </div>
+
+                {geoStatus && (
+                  <p className="text-xs font-medium text-blue-900 bg-blue-50 p-2 rounded-lg">{geoStatus}</p>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Latitude (Garis Lintang)</label>
+                    <input 
+                      type="number" 
+                      step="any"
+                      name="lat"
+                      required
+                      value={formData.lat}
+                      onChange={(e) => setFormData(prev => ({ ...prev, lat: parseFloat(e.target.value) || 0 }))}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Longitude (Garis Bujur)</label>
+                    <input 
+                      type="number" 
+                      step="any"
+                      name="lng"
+                      required
+                      value={formData.lng}
+                      onChange={(e) => setFormData(prev => ({ ...prev, lng: parseFloat(e.target.value) || 0 }))}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Interactive Map Preview */}
+                <GoogleMapPreview lat={formData.lat} lng={formData.lng} height="h-36" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Buat Username</label>
+                <input 
+                  type="text" 
+                  name="username"
+                  required
+                  value={formData.username}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                  placeholder="Username untuk login"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Buat Password</label>
+                <input 
+                  type="password" 
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                  placeholder="Minimal 6 karakter"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 flex gap-4">
+              <button 
+                type="button"
+                onClick={onBackToLogin}
+                className="w-1/3 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all text-sm"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                className="w-2/3 py-3 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold rounded-xl shadow-lg transition-all text-sm"
+              >
+                Kirim Pendaftaran Alumni
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- BERANDA COMPONENT ---
+const Beranda = ({ currentUserAlumni, totalAlumni, totalKetua, saldoKas, pendingCount, isAdmin, onNavigate }) => {
+  return (
+    <div className="space-y-8 animate-fadeIn">
+      {/* Hero Banner */}
+      <div className="bg-gradient-to-r from-[#0B3B60] via-blue-900 to-blue-800 rounded-3xl p-8 md:p-10 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F2B705_2px,transparent_2px)] [background-size:16px_16px]"></div>
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+          <img 
+            src={currentUserAlumni.foto} 
+            alt={currentUserAlumni.nama} 
+            className="w-24 h-24 rounded-2xl object-cover border-4 border-[#F2B705] shadow-lg flex-shrink-0 bg-white"
+            onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserAlumni.nama)}&background=0B3B60&color=F2B705`; }}
+          />
+          <div className="text-center md:text-left">
+            <div className="inline-flex items-center gap-2 bg-[#F2B705] text-[#0B3B60] text-xs font-bold px-3 py-1 rounded-full uppercase mb-2">
+              <span>Selamat Datang</span>
+              {isAdmin && <span className="bg-[#0B3B60] text-white px-2 py-0.5 rounded-full text-[10px]">PIC ADMIN</span>}
+            </div>
+            <h2 className="text-3xl font-serif font-bold mb-2">{currentUserAlumni.nama}</h2>
+            <p className="text-blue-100 text-sm max-w-2xl leading-relaxed">
+              Korp {currentUserAlumni.korp} • Angkatan {currentUserAlumni.angkatan}. 
+              {isAdmin ? " Anda memiliki akses khusus PIC Admin untuk menyetujui pendaftaran alumni, mengelola kas, dan memperbarui sejarah ketua." : " Portal resmi jejaring alumni PMII Wahid Hasyim UII."}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Warning Alert if pending alumni exist */}
+      {isAdmin && pendingCount > 0 && (
+        <div className="bg-amber-50 border border-amber-300 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-amber-500 text-white rounded-2xl font-bold text-xl animate-pulse">
+              🔔
+            </div>
+            <div>
+              <h4 className="font-bold text-amber-950 font-serif text-lg">Ada {pendingCount} Permohonan Alumni Menunggu Verifikasi</h4>
+              <p className="text-amber-800 text-xs mt-0.5">Sebagai PIC Admin, mohon periksa titik Google Maps dan kelengkapan berkas pendaftar.</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => onNavigate('approval')}
+            className="px-5 py-2.5 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-all whitespace-nowrap"
+          >
+            Tinjau Pendaftaran →
+          </button>
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+          <div className="p-4 bg-blue-50 text-[#0B3B60] rounded-2xl">
+            <IconUsers />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Alumni Aktif</p>
+            <p className="text-2xl font-bold text-slate-800">{totalAlumni} Sahabat</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+          <div className="p-4 bg-amber-50 text-amber-700 rounded-2xl">
+            <IconAward />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Sejarah Kepemimpinan</p>
+            <p className="text-2xl font-bold text-slate-800">{totalKetua} Periode</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center space-x-4 hover:shadow-md transition-shadow">
+          <div className="p-4 bg-emerald-50 text-emerald-700 rounded-2xl">
+            <IconWallet />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Saldo Kas & Donasi</p>
+            <p className="text-2xl font-bold text-slate-800">{formatRupiah(saldoKas)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Access Section */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <h3 className="text-xl font-bold font-serif text-slate-800 mb-4">Pintasan Fitur Utama</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div 
+            onClick={() => onNavigate('alumni')}
+            className="p-6 rounded-2xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200 hover:border-blue-200 cursor-pointer transition-all group"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-[#0B3B60] text-white rounded-xl group-hover:scale-110 transition-transform"><IconUsers /></div>
+              <h4 className="font-bold text-slate-800 text-lg">Direktori & Titik Peta Alumni</h4>
+            </div>
+            <p className="text-sm text-slate-600">Cari kawan seangkatan, lihat persebaran koordinat peta domisili, & kontak WhatsApp.</p>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('ketua')}
+            className="p-6 rounded-2xl bg-slate-50 hover:bg-amber-50/50 border border-slate-200 hover:border-amber-200 cursor-pointer transition-all group"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-amber-500 text-white rounded-xl group-hover:scale-110 transition-transform"><IconAward /></div>
+              <h4 className="font-bold text-slate-800 text-lg">Sejarah Ketua Komisariat</h4>
+            </div>
+            <p className="text-sm text-slate-600">Rekam jejak kepemimpinan, motto pergerakan, prestasi, dan program kerja ketua.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- DIREKTORI ALUMNI COMPONENT ---
+const DirektoriAlumni = ({ alumniList }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMapAlumni, setSelectedMapAlumni] = useState(null);
+
+  const approvedAlumni = useMemo(() => {
+    return alumniList.filter(a => a.status === 'approved');
+  }, [alumniList]);
+
+  const filteredAlumni = useMemo(() => {
+    return approvedAlumni.filter(a => 
+      a.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.angkatan.includes(searchTerm) ||
+      a.korp.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.alamat.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, approvedAlumni]);
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold font-serif text-slate-800">Direktori Alumni</h2>
+          <p className="text-slate-500 text-sm mt-1">Cari sahabat alumni & lihat lokasi domisili Google Maps mereka.</p>
+        </div>
+        <div className="relative w-full md:w-80">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+            <IconSearch />
+          </div>
+          <input 
+            type="text" 
+            className="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-2xl focus:ring-[#0B3B60] focus:border-[#0B3B60] block w-full pl-10 p-3" 
+            placeholder="Cari nama, angkatan, korp, lokasi..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredAlumni.map((alumni) => (
+          <div key={alumni.id} className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all flex flex-col justify-between">
+            <div>
+              <div className="h-28 bg-[#0B3B60] relative">
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#F2B705_2px,transparent_2px)] [background-size:12px_12px]"></div>
+                <img 
+                  src={alumni.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(alumni.nama)}&background=0B3B60&color=F2B705`} 
+                  alt={alumni.nama} 
+                  className="w-20 h-20 rounded-2xl object-cover border-4 border-white absolute -bottom-10 left-6 shadow-md bg-white" 
+                  onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(alumni.nama)}&background=0B3B60&color=F2B705`; }}
+                />
+              </div>
+              <div className="pt-12 p-6 space-y-2">
+                <h3 className="text-lg font-bold text-slate-900 font-serif">{alumni.nama}</h3>
+                <p className="text-xs font-bold text-[#0B3B60]">Korp {alumni.korp} • Angkatan {alumni.angkatan}</p>
+                
+                <div className="pt-2 text-xs text-slate-600 space-y-1">
+                  <p className="font-semibold line-clamp-2" title={alumni.alamat}>
+                    📍 {alumni.alamat}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 pt-0 space-y-2">
+              {alumni.lat && alumni.lng && (
+                <button
+                  onClick={() => setSelectedMapAlumni(alumni)}
+                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl flex items-center justify-center transition-colors"
+                >
+                  <IconMapPin /> Lihat Titik Peta Google Maps
+                </button>
+              )}
+              <a 
+                href={`https://wa.me/${alumni.noWa}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center px-4 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-colors"
+              >
+                <IconWhatsApp />
+                Hubungi via WhatsApp
+              </a>
+            </div>
+          </div>
+        ))}
+        {filteredAlumni.length === 0 && (
+          <div className="col-span-full py-16 text-center text-slate-500 bg-white rounded-3xl border border-slate-100">
+            Tidak ditemukan alumni yang sesuai dengan kata kunci pencarian.
+          </div>
+        )}
+      </div>
+
+      {/* Modal View Google Maps */}
+      {selectedMapAlumni && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 relative shadow-2xl animate-fadeIn">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-slate-900 font-serif text-lg">{selectedMapAlumni.nama}</h3>
+                <p className="text-xs text-slate-500">Lokasi Domisili Terdaftar</p>
+              </div>
+              <button 
+                onClick={() => setSelectedMapAlumni(null)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-full"
+              >
+                <IconClose />
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              📍 <strong>Alamat:</strong> {selectedMapAlumni.alamat}
+            </p>
+
+            <GoogleMapPreview lat={selectedMapAlumni.lat} lng={selectedMapAlumni.lng} height="h-64" />
+
+            <div className="pt-2">
+              <button
+                onClick={() => setSelectedMapAlumni(null)}
+                className="w-full py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl"
+              >
+                Tutup Peta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- KETUA KOMISARIAT COMPONENTS ---
+const KetuaDetail = ({ ketua, onBack }) => {
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <button 
+        onClick={onBack}
+        className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-xs"
+      >
+        <IconBack />
+        Kembali ke Daftar Ketua
+      </button>
+
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden p-8 md:p-10">
+        <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+          <img 
+            src={ketua.foto} 
+            alt={ketua.nama} 
+            className="w-48 h-48 rounded-3xl object-cover border-4 border-[#F2B705] shadow-lg flex-shrink-0 bg-slate-100"
+            onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(ketua.nama)}&background=0B3B60&color=F2B705`; }}
+          />
+          <div className="space-y-4 flex-grow text-center md:text-left">
+            <div>
+              <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase">
+                Periode {ketua.periode}
+              </span>
+              <h2 className="text-3xl font-serif font-bold text-slate-900 mt-2">{ketua.nama}</h2>
+              <p className="text-sm font-semibold text-[#0B3B60] mt-1">Status: {ketua.status} • Korp {ketua.korp}</p>
+            </div>
+            
+            <blockquote className="italic text-slate-600 bg-slate-50 p-4 rounded-2xl border-l-4 border-[#F2B705]">
+              "{ketua.motto}"
+            </blockquote>
+
+            <div>
+              <a 
+                href={`https://wa.me/${ketua.noWa}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-colors"
+              >
+                <IconWhatsApp />
+                Hubungi via WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 pt-10 border-t border-slate-100">
+          <div>
+            <h3 className="text-xl font-bold font-serif text-slate-800 mb-4 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F2B705]"></span>
+              Daftar Prestasi Selama Menjabat
+            </h3>
+            <ul className="space-y-3">
+              {ketua.prestasi.map((p, idx) => (
+                <li key={idx} className="flex items-start gap-3 bg-slate-50 p-3.5 rounded-2xl text-sm text-slate-700 border border-slate-100">
+                  <span className="text-amber-600 font-bold">🏆</span>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold font-serif text-slate-800 mb-4 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#0B3B60]"></span>
+              Program Kerja Unggulan
+            </h3>
+            <ul className="space-y-3">
+              {ketua.proker.map((pr, idx) => (
+                <li key={idx} className="flex items-start gap-3 bg-slate-50 p-3.5 rounded-2xl text-sm text-slate-700 border border-slate-100">
+                  <span className="text-[#0B3B60] font-bold">📌</span>
+                  <span>{pr}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const KetuaList = ({ ketuaList, isAdmin, onSelectKetua, onAddKetua }) => {
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold font-serif text-slate-800">Sejarah Ketua Komisariat</h2>
+          <p className="text-slate-500 text-sm mt-1">Daftar kepemimpinan PMII Komisariat Wahid Hasyim UII dari masa ke masa.</p>
+        </div>
+        {isAdmin && (
+          <button
+            onClick={onAddKetua}
+            className="px-4 py-2.5 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-colors flex items-center"
+          >
+            <IconPlus /> Tambah Data Ketua
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {ketuaList.map((ketua) => (
+          <div 
+            key={ketua.id} 
+            onClick={() => onSelectKetua(ketua)}
+            className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div>
+              <div className="h-48 overflow-hidden relative bg-slate-100">
+                <img 
+                  src={ketua.foto} 
+                  alt={ketua.nama} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(ketua.nama)}&background=0B3B60&color=F2B705`; }}
+                />
+                <div className="absolute top-3 left-3">
+                  <span className="bg-[#0B3B60]/90 text-[#F2B705] text-xs font-bold px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
+                    {ketua.periode}
+                  </span>
+                </div>
+              </div>
+              <div className="p-5">
+                <span className="inline-block bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">
+                  {ketua.status}
+                </span>
+                <h3 className="font-bold font-serif text-slate-900 text-lg group-hover:text-[#0B3B60] transition-colors">{ketua.nama}</h3>
+                <p className="text-xs text-slate-500 mt-1">Korp {ketua.korp}</p>
+              </div>
+            </div>
+            <div className="p-5 pt-0">
+              <span className="text-xs font-bold text-[#0B3B60] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Lihat Profil & Capaian →
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- KEUANGAN & DONASI COMPONENT ---
+const Keuangan = ({ keuanganList, isAdmin, onAddKeuangan }) => {
+  const totalPemasukan = keuanganList.filter(k => k.tipe === 'masuk').reduce((acc, curr) => acc + curr.nominal, 0);
+  const totalPengeluaran = keuanganList.filter(k => k.tipe === 'keluar').reduce((acc, curr) => acc + curr.nominal, 0);
+  const saldoAkhir = totalPemasukan - totalPengeluaran;
+
+  const handleDonasiWa = () => {
+    const message = encodeURIComponent("Halo Bendahara IKA PMII Wahid Hasyim UII, saya ingin melakukan konfirmasi donasi untuk kas komisariat.");
+    window.open(`https://wa.me/6281234567890?text=${message}`, '_blank');
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-br from-[#0B3B60] to-blue-900 rounded-3xl p-6 text-white shadow-xl">
+          <p className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1">Saldo Kas Akhir</p>
+          <h3 className="text-3xl font-bold font-serif">{formatRupiah(saldoAkhir)}</h3>
+        </div>
+        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Pemasukan</p>
+          <h3 className="text-2xl font-bold font-serif text-emerald-600">{formatRupiah(totalPemasukan)}</h3>
+        </div>
+        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Pengeluaran</p>
+          <h3 className="text-2xl font-bold font-serif text-rose-600">{formatRupiah(totalPengeluaran)}</h3>
+        </div>
+      </div>
+
+      {/* Donasi CTA */}
+      <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div>
+          <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Galang Donasi & Kas</span>
+          <h3 className="text-xl font-bold font-serif text-amber-900 mt-2">Dukung Kegiatan Kaderisasi & Pergerakan</h3>
+          <p className="text-amber-800 text-sm mt-1 max-w-xl">Setiap rupiah yang masuk dicatat secara transparan untuk kemajuan kader PMII Komisariat Wahid Hasyim UII.</p>
+        </div>
+        <button 
+          onClick={handleDonasiWa}
+          className="px-6 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-2xl shadow-lg transition-colors whitespace-nowrap flex items-center gap-2"
+        >
+          <IconWhatsApp />
+          Konfirmasi Donasi via WhatsApp
+        </button>
+      </div>
+
+      {/* Tabel Transparansi & Admin Controls */}
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-xl font-bold font-serif text-slate-800">Catatan Transparansi Arus Kas</h2>
+            <p className="text-slate-500 text-xs mt-1">Laporan real-time dana masuk dan keluar komisariat.</p>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={onAddKeuangan}
+              className="px-4 py-2.5 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-colors flex items-center"
+            >
+              <IconPlus /> Catat Arus Kas Baru
+            </button>
+          )}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left text-slate-600">
+            <thead className="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th scope="col" className="px-6 py-4">Tanggal</th>
+                <th scope="col" className="px-6 py-4">Keterangan Transaksi</th>
+                <th scope="col" className="px-6 py-4">Jenis</th>
+                <th scope="col" className="px-6 py-4 text-right">Nominal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {keuanganList.map((item) => (
+                <tr key={item.id} className="bg-white border-b border-slate-100 hover:bg-slate-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-slate-500 text-xs">{formatDate(item.tanggal)}</td>
+                  <td className="px-6 py-4 font-semibold text-slate-900">{item.keterangan}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.tipe === 'masuk' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                      {item.tipe === 'masuk' ? 'Dana Masuk' : 'Dana Keluar'}
+                    </span>
+                  </td>
+                  <td className={`px-6 py-4 text-right font-bold ${item.tipe === 'masuk' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {item.tipe === 'masuk' ? '+' : '-'}{formatRupiah(item.nominal)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- ADMIN ALUMNI APPROVAL PANEL ---
+const AdminApprovalPanel = ({ pendingAlumni, onApprove, onReject }) => {
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold font-serif text-slate-800">Verifikasi & Approval Alumni Baru</h2>
+            <p className="text-slate-500 text-sm mt-1">Halaman khusus PIC Admin untuk memverifikasi domisili peta Google Maps & data alumni.</p>
+          </div>
+          <span className="bg-amber-100 text-amber-900 font-bold px-3 py-1 rounded-full text-xs">
+            {pendingAlumni.length} Menunggu Verifikasi
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {pendingAlumni.map((alumni) => (
+          <div key={alumni.id} className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden p-6 space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={alumni.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(alumni.nama)}&background=0B3B60&color=F2B705`} 
+                  alt={alumni.nama} 
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-[#F2B705]"
+                  onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(alumni.nama)}&background=0B3B60&color=F2B705`; }}
+                />
+                <div>
+                  <h3 className="text-xl font-bold font-serif text-slate-900">{alumni.nama}</h3>
+                  <p className="text-xs text-[#0B3B60] font-bold">Korp {alumni.korp} • Angkatan {alumni.angkatan}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">WhatsApp: +{alumni.noWa}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <button
+                  onClick={() => onReject(alumni.id)}
+                  className="flex-1 md:flex-initial px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-colors"
+                >
+                  Tolak Pendaftaran
+                </button>
+                <button
+                  onClick={() => onApprove(alumni.id)}
+                  className="flex-1 md:flex-initial px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-colors flex items-center justify-center gap-1"
+                >
+                  <IconCheck /> Setujui & Aktifkan
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Alamat Tertulis</p>
+                <p className="text-xs text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-200">📍 {alumni.alamat}</p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Titik Koordinat Google Maps Pendaftar</p>
+                <GoogleMapPreview lat={alumni.lat} lng={alumni.lng} height="h-32" />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {pendingAlumni.length === 0 && (
+          <div className="py-16 text-center text-slate-500 bg-white rounded-3xl border border-slate-100 space-y-2">
+            <div className="text-3xl">✨</div>
+            <p className="font-bold text-slate-700 text-base">Tidak ada permohonan pendaftaran alumni yang menggantung!</p>
+            <p className="text-xs">Seluruh alumni terdaftar telah terverifikasi oleh PIC Admin.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- PROFIL SAYA COMPONENT ---
+const ProfilSaya = ({ currentUserAlumni, onUpdateAlumni }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({ ...currentUserAlumni });
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    onUpdateAlumni(formData);
+    setIsEditing(false);
+    setSuccessMsg('Profil berhasil diperbarui!');
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn max-w-3xl mx-auto">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <h2 className="text-2xl font-bold font-serif text-slate-800">Profil Saya</h2>
+        <p className="text-slate-500 text-sm mt-1">Kelola dan perbarui informasi data diri Anda di portal alumni.</p>
+      </div>
+
+      {successMsg && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-2xl">
+          {successMsg}
+        </div>
+      )}
+
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden p-8">
+        {!isEditing ? (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row items-center gap-6 pb-6 border-b border-slate-100">
+              <img 
+                src={currentUserAlumni.foto} 
+                alt={currentUserAlumni.nama} 
+                className="w-32 h-32 rounded-3xl object-cover border-4 border-[#F2B705] shadow-lg bg-slate-100"
+                onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserAlumni.nama)}&background=0B3B60&color=F2B705`; }}
+              />
+              <div className="text-center md:text-left">
+                <h3 className="text-2xl font-bold font-serif text-slate-900">{currentUserAlumni.nama}</h3>
+                <p className="text-sm font-bold text-[#0B3B60] mt-1">Korp {currentUserAlumni.korp} • Angkatan {currentUserAlumni.angkatan}</p>
+                <div className="mt-4">
+                  <button 
+                    onClick={() => setIsEditing(true)}
+                    className="inline-flex items-center px-4 py-2 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-md transition-colors"
+                  >
+                    <IconEdit />
+                    Edit Profil
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Nomor WhatsApp</p>
+                <p className="text-base font-semibold text-slate-800 mt-1">+{currentUserAlumni.noWa}</p>
+              </div>
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Domisili / Alamat</p>
+                <p className="text-base font-semibold text-slate-800 mt-1">{currentUserAlumni.alamat}</p>
+              </div>
+            </div>
+
+            {currentUserAlumni.lat && currentUserAlumni.lng && (
+              <div className="space-y-2 pt-2">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Peta Domisili Terdaftar</p>
+                <GoogleMapPreview lat={currentUserAlumni.lat} lng={currentUserAlumni.lng} height="h-40" />
+              </div>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={handleSave} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Lengkap</label>
+                <input 
+                  type="text" 
+                  name="nama"
+                  required
+                  value={formData.nama}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Angkatan</label>
+                <input 
+                  type="number" 
+                  name="angkatan"
+                  required
+                  value={formData.angkatan}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Asal Korp</label>
+                <input 
+                  type="text" 
+                  name="korp"
+                  required
+                  value={formData.korp}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nomor WhatsApp</label>
+                <input 
+                  type="text" 
+                  name="noWa"
+                  required
+                  value={formData.noWa}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Alamat Saat Ini</label>
+              <textarea 
+                name="alamat"
+                required
+                rows="2"
+                value={formData.alamat}
+                onChange={handleChange}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-[#0B3B60] focus:outline-none"
+              ></textarea>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase">Latitude</label>
+                <input 
+                  type="number"
+                  step="any" 
+                  name="lat"
+                  value={formData.lat}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lat: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase">Longitude</label>
+                <input 
+                  type="number"
+                  step="any" 
+                  name="lng"
+                  value={formData.lng}
+                  onChange={(e) => setFormData(prev => ({ ...prev, lng: parseFloat(e.target.value) || 0 }))}
+                  className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button 
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="w-1/2 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-all text-xs"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                className="w-1/2 py-2.5 bg-[#0B3B60] hover:bg-blue-900 text-white font-bold rounded-xl shadow-md transition-all text-xs"
+              >
+                Simpan Perubahan
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN APP COMPONENT ---
+export default function App() {
+  const [currentView, setCurrentView] = useState('login'); // 'login' | 'register' | 'app'
+  const [activeTab, setActiveTab] = useState('beranda'); // 'beranda' | 'alumni' | 'ketua' | 'profil' | 'keuangan' | 'approval'
+  const [selectedKetua, setSelectedKetua] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Modals for Admin CRUD
+  const [isAddKeuanganOpen, setIsAddKeuanganOpen] = useState(false);
+  const [isAddKetuaOpen, setIsAddKetuaOpen] = useState(false);
+
+  // Form states for Admin CRUD
+  const [newKeuangan, setNewKeuangan] = useState({ keterangan: '', tipe: 'masuk', nominal: '' });
+  const [newKetua, setNewKetua] = useState({ periode: '', nama: '', status: 'Menjabat', korp: '', noWa: '', motto: '', prestasiStr: '', prokerStr: '' });
+
+  // Session Data States
+  const [akunList, setAkunList] = useState(INITIAL_AKUN);
+  const [alumniList, setAlumniList] = useState(INITIAL_ALUMNI);
+  const [ketuaList, setKetuaList] = useState(INITIAL_KETUA);
+  const [keuanganList, setKeuanganList] = useState(INITIAL_KEUANGAN);
+  
+  const [currentUserId, setCurrentUserId] = useState(1);
+  const [loginError, setLoginError] = useState('');
+
+  // Get current logged in account & profile
+  const currentUserAkun = useMemo(() => {
+    return akunList.find(a => a.id === currentUserId) || akunList[0];
+  }, [akunList, currentUserId]);
+
+  const currentUserAlumni = useMemo(() => {
+    return alumniList.find(a => a.id === currentUserAkun?.alumniId) || alumniList[0];
+  }, [alumniList, currentUserAkun]);
+
+  const isAdmin = currentUserAkun?.role === 'admin';
+
+  const pendingAlumni = useMemo(() => {
+    return alumniList.filter(a => a.status === 'pending');
+  }, [alumniList]);
+
+  const saldoKas = useMemo(() => {
+    const masuk = keuanganList.filter(k => k.tipe === 'masuk').reduce((acc, curr) => acc + curr.nominal, 0);
+    const keluar = keuanganList.filter(k => k.tipe === 'keluar').reduce((acc, curr) => acc + curr.nominal, 0);
+    return masuk - keluar;
+  }, [keuanganList]);
+
+  // Handle Login Check with Approval Status Guard
+  const handleLogin = (username, password) => {
+    const found = akunList.find(a => a.username.toLowerCase() === username.toLowerCase() && a.password === password);
+    if (!found) {
+      setLoginError('Nama pengguna atau kata sandi salah. Silakan periksa kembali.');
+      return;
+    }
+
+    const linkedAlumni = alumniList.find(al => al.id === found.alumniId);
+    if (linkedAlumni && linkedAlumni.status === 'pending') {
+      setLoginError('⚠️ Akun Anda masih dalam proses verifikasi & approval oleh PIC Admin. Silakan tunggu konfirmasi Admin.');
+      return;
+    }
+
+    setCurrentUserId(found.id);
+    setLoginError('');
+    setCurrentView('app');
+    setActiveTab('beranda');
+  };
+
+  // Handle Register Submission by Applicant
+  const handleRegisterSubmitted = (formData, setError) => {
+    const exist = akunList.some(a => a.username.toLowerCase() === formData.username.toLowerCase());
+    if (exist) {
+      setError('Username ini sudah terpakai. Pilih username lain.');
+      return;
+    }
+
+    const newAlumniId = Date.now();
+    const newAlumni = {
+      id: newAlumniId,
+      nama: formData.nama,
+      angkatan: formData.angkatan,
+      korp: formData.korp,
+      noWa: formData.noWa,
+      alamat: formData.alamat,
+      lat: formData.lat || -7.6872,
+      lng: formData.lng || 110.4144,
+      foto: formData.foto || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=300`,
+      status: 'pending' // Mandatory approval workflow
+    };
+
+    const newAkunId = akunList.length + 1;
+    const newAkun = {
+      id: newAkunId,
+      username: formData.username,
+      password: formData.password,
+      alumniId: newAlumniId,
+      role: 'user'
+    };
+
+    setAlumniList(prev => [newAlumni, ...prev]);
+    setAkunList(prev => [...prev, newAkun]);
+    setError(null);
+  };
+
+  // Admin Actions: Approve or Reject Pending Alumni
+  const handleApproveAlumni = (alumniId) => {
+    setAlumniList(prev => prev.map(a => a.id === alumniId ? { ...a, status: 'approved' } : a));
+  };
+
+  const handleRejectAlumni = (alumniId) => {
+    setAlumniList(prev => prev.filter(a => a.id !== alumniId));
+    setAkunList(prev => prev.filter(a => a.alumniId !== alumniId));
+  };
+
+  // Admin Action: Add Keuangan Entry
+  const handleSaveKeuangan = (e) => {
+    e.preventDefault();
+    if (!newKeuangan.keterangan || !newKeuangan.nominal) return;
+
+    const entry = {
+      id: Date.now(),
+      tanggal: new Date().toISOString().split('T')[0],
+      keterangan: newKeuangan.keterangan,
+      tipe: newKeuangan.tipe,
+      nominal: parseFloat(newKeuangan.nominal) || 0
+    };
+
+    setKeuanganList(prev => [entry, ...prev]);
+    setNewKeuangan({ keterangan: '', tipe: 'masuk', nominal: '' });
+    setIsAddKeuanganOpen(false);
+  };
+
+  // Admin Action: Add Ketua Entry
+  const handleSaveKetua = (e) => {
+    e.preventDefault();
+    if (!newKetua.nama || !newKetua.periode) return;
+
+    const entry = {
+      id: Date.now(),
+      periode: newKetua.periode,
+      nama: newKetua.nama,
+      status: newKetua.status,
+      korp: newKetua.korp || 'Umum',
+      noWa: newKetua.noWa || '628123456789',
+      motto: newKetua.motto || 'Pergerakan Berkelanjutan',
+      foto: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400',
+      prestasi: newKetua.prestasiStr ? newKetua.prestasiStr.split(',').map(s => s.trim()) : ['Mengawal kaderisasi berdikari'],
+      proker: newKetua.prokerStr ? newKetua.prokerStr.split(',').map(s => s.trim()) : ['Diskusi Rutin Pergerakan']
+    };
+
+    setKetuaList(prev => [entry, ...prev]);
+    setNewKetua({ periode: '', nama: '', status: 'Menjabat', korp: '', noWa: '', motto: '', prestasiStr: '', prokerStr: '' });
+    setIsAddKetuaOpen(false);
+  };
+
+  // Handle Profile Update
+  const handleUpdateAlumni = (updatedAlumni) => {
+    setAlumniList(prev => prev.map(a => a.id === updatedAlumni.id ? updatedAlumni : a));
+  };
+
+  const handleLogout = () => {
+    setCurrentView('login');
+    setActiveTab('beranda');
+    setSelectedKetua(null);
+  };
+
+  const navigateTo = (tab) => {
+    setActiveTab(tab);
+    setSelectedKetua(null);
+    setIsMobileMenuOpen(false);
+  };
+
+  if (currentView === 'login') {
+    return (
+      <LoginScreen 
+        onLogin={handleLogin}
+        onSwitchToRegister={() => setCurrentView('register')}
+        errorMsg={loginError}
+      />
+    );
+  }
+
+  if (currentView === 'register') {
+    return (
+      <RegisterScreen 
+        onRegisterSubmitted={handleRegisterSubmitted}
+        onBackToLogin={() => setCurrentView('login')}
+      />
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row font-sans">
+      {/* SIDEBAR DESKTOP */}
+      <aside className="hidden md:flex flex-col w-72 bg-[#0B3B60] text-white fixed h-full z-30 shadow-2xl">
+        <div className="p-6 border-b border-blue-900/50 flex items-center gap-3">
+          <LogoEmblem className="w-12 h-12" />
+          <div>
+            <h1 className="font-bold text-base tracking-wide leading-tight">IKA PMII</h1>
+            <p className="text-[11px] text-[#F2B705] font-semibold tracking-wider">Wahid Hasyim UII</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+          {[
+            { id: 'beranda', label: 'Beranda', icon: <IconHome /> },
+            { id: 'alumni', label: 'Direktori Alumni', icon: <IconUsers /> },
+            { id: 'ketua', label: 'Sejarah Ketua', icon: <IconAward /> },
+            { id: 'profil', label: 'Profil Saya', icon: <IconUserCircle /> },
+            { id: 'keuangan', label: 'Keuangan & Donasi', icon: <IconWallet /> },
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => navigateTo(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all ${
+                activeTab === item.id 
+                  ? 'bg-[#F2B705] text-[#0B3B60] shadow-lg shadow-amber-500/10' 
+                  : 'text-blue-100 hover:bg-blue-900/60 hover:text-white'
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+
+          {/* ADMIN SPECIAL TAB */}
+          {isAdmin && (
+            <div className="pt-4 border-t border-blue-900/50 space-y-1">
+              <span className="px-4 text-[10px] font-bold text-[#F2B705] uppercase tracking-wider">Menu PIC Admin</span>
+              <button
+                onClick={() => navigateTo('approval')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                  activeTab === 'approval' 
+                    ? 'bg-amber-400 text-amber-950 shadow' 
+                    : 'bg-blue-900/40 text-amber-300 hover:bg-blue-900'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <IconShieldAlert /> Persetujuan Alumni
+                </span>
+                {pendingAlumni.length > 0 && (
+                  <span className="bg-rose-500 text-white font-mono text-[10px] px-2 py-0.5 rounded-full animate-pulse">
+                    {pendingAlumni.length}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
+        </nav>
+
+        <div className="p-4 border-t border-blue-900/50">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold text-rose-300 hover:bg-rose-500/10 hover:text-rose-200 transition-colors"
+          >
+            <IconLogout />
+            Keluar (Logout)
+          </button>
+        </div>
+      </aside>
+
+      {/* TOPBAR MOBILE */}
+      <div className="md:hidden bg-[#0B3B60] text-white flex justify-between items-center px-4 py-3.5 sticky top-0 z-40 shadow-md">
+        <div className="flex items-center gap-3">
+          <LogoEmblem className="w-10 h-10" />
+          <div>
+            <h1 className="font-bold text-sm leading-tight">IKA PMII</h1>
+            <p className="text-[10px] text-[#F2B705] font-semibold tracking-wider">Wahid Hasyim UII</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded-xl bg-blue-900 text-white"
+        >
+          {isMobileMenuOpen ? <IconClose /> : <IconMenu />}
+        </button>
+      </div>
+
+      {/* MOBILE DRAWER OVERLAY */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden bg-black/50 backdrop-blur-sm flex justify-end">
+          <div className="w-72 bg-[#0B3B60] h-full p-6 flex flex-col justify-between shadow-2xl animate-slideLeft">
+            <div>
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-blue-900">
+                <div className="flex items-center gap-3">
+                  <LogoEmblem className="w-10 h-10" />
+                  <div>
+                    <h1 className="font-bold text-sm text-white">IKA PMII</h1>
+                    <p className="text-[10px] text-[#F2B705]">Wahid Hasyim UII</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="text-white p-1">
+                  <IconClose />
+                </button>
+              </div>
+
+              <nav className="space-y-2">
+                {[
+                  { id: 'beranda', label: 'Beranda', icon: <IconHome /> },
+                  { id: 'alumni', label: 'Direktori Alumni', icon: <IconUsers /> },
+                  { id: 'ketua', label: 'Sejarah Ketua', icon: <IconAward /> },
+                  { id: 'profil', label: 'Profil Saya', icon: <IconUserCircle /> },
+                  { id: 'keuangan', label: 'Keuangan & Donasi', icon: <IconWallet /> },
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => navigateTo(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+                      activeTab === item.id 
+                        ? 'bg-[#F2B705] text-[#0B3B60]' 
+                        : 'text-blue-100 hover:bg-blue-900'
+                    }`}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                ))}
+
+                {isAdmin && (
+                  <button
+                    onClick={() => navigateTo('approval')}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                      activeTab === 'approval' ? 'bg-amber-400 text-amber-950' : 'bg-blue-900 text-amber-300'
+                    }`}
+                  >
+                    <span>🛡️ Approval Alumni</span>
+                    {pendingAlumni.length > 0 && (
+                      <span className="bg-rose-500 text-white font-mono text-[10px] px-2 py-0.5 rounded-full">
+                        {pendingAlumni.length}
+                      </span>
+                    )}
+                  </button>
+                )}
+              </nav>
+            </div>
+
+            <div className="pt-4 border-t border-blue-900">
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold text-rose-300 hover:bg-rose-500/10"
+              >
+                <IconLogout />
+                Keluar (Logout)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 md:ml-72 flex flex-col min-h-screen">
+        <header className="hidden md:flex bg-white border-b border-slate-200 px-8 py-4 justify-between items-center sticky top-0 z-20 shadow-sm">
+          <div>
+            <h2 className="text-xl font-bold font-serif text-slate-800 capitalize">
+              {activeTab === 'beranda' && 'Beranda Portal'}
+              {activeTab === 'alumni' && 'Direktori & Peta Alumni'}
+              {activeTab === 'ketua' && 'Sejarah Kepemimpinan'}
+              {activeTab === 'profil' && 'Kelola Profil Pengguna'}
+              {activeTab === 'keuangan' && 'Keuangan & Donasi'}
+              {activeTab === 'approval' && 'Verifikasi & Approval Alumni (Admin)'}
+            </h2>
+            <p className="text-xs text-slate-500">Ikatan Alumni PMII Komisariat Wahid Hasyim UII</p>
+          </div>
+
+          <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl">
+            <img 
+              src={currentUserAlumni.foto} 
+              alt={currentUserAlumni.nama} 
+              className="w-8 h-8 rounded-xl object-cover bg-slate-200"
+              onError={(e)=>{ e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUserAlumni.nama)}&background=0B3B60&color=F2B705`; }}
+            />
+            <div className="text-left">
+              <p className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                {currentUserAlumni.nama}
+                {isAdmin && <span className="bg-[#0B3B60] text-white text-[9px] px-1.5 py-0.5 rounded font-mono">PIC</span>}
+              </p>
+              <p className="text-[10px] text-slate-500">Angkatan {currentUserAlumni.angkatan}</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-4 md:p-8 flex-grow">
+          {activeTab === 'beranda' && (
+            <Beranda 
+              currentUserAlumni={currentUserAlumni} 
+              totalAlumni={alumniList.filter(a => a.status === 'approved').length} 
+              totalKetua={ketuaList.length} 
+              saldoKas={saldoKas}
+              pendingCount={pendingAlumni.length}
+              isAdmin={isAdmin}
+              onNavigate={navigateTo}
+            />
+          )}
+
+          {activeTab === 'alumni' && (
+            <DirektoriAlumni alumniList={alumniList} />
+          )}
+
+          {activeTab === 'ketua' && (
+            selectedKetua ? (
+              <KetuaDetail ketua={selectedKetua} onBack={() => setSelectedKetua(null)} />
+            ) : (
+              <KetuaList 
+                ketuaList={ketuaList} 
+                isAdmin={isAdmin}
+                onSelectKetua={(k) => setSelectedKetua(k)}
+                onAddKetua={() => setIsAddKetuaOpen(true)}
+              />
+            )
+          )}
+
+          {activeTab === 'profil' && (
+            <ProfilSaya currentUserAlumni={currentUserAlumni} onUpdateAlumni={handleUpdateAlumni} />
+          )}
+
+          {activeTab === 'keuangan' && (
+            <Keuangan 
+              keuanganList={keuanganList} 
+              isAdmin={isAdmin} 
+              onAddKeuangan={() => setIsAddKeuanganOpen(true)}
+            />
+          )}
+
+          {activeTab === 'approval' && isAdmin && (
+            <AdminApprovalPanel 
+              pendingAlumni={pendingAlumni}
+              onApprove={handleApproveAlumni}
+              onReject={handleRejectAlumni}
+            />
+          )}
+        </div>
+
+        {/* MODAL ADMIN ADD KEUANGAN */}
+        {isAddKeuanganOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-fadeIn">
+              <h3 className="text-xl font-bold font-serif text-slate-900">Catat Arus Kas Baru (Admin PIC)</h3>
+              <form onSubmit={handleSaveKeuangan} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Keterangan Transaksi</label>
+                  <input 
+                    type="text"
+                    required
+                    value={newKeuangan.keterangan}
+                    onChange={(e) => setNewKeuangan(prev => ({ ...prev, keterangan: e.target.value }))}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm"
+                    placeholder="Contoh: Donasi Alumni Angkatan 2020"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tipe Transaksi</label>
+                    <select
+                      value={newKeuangan.tipe}
+                      onChange={(e) => setNewKeuangan(prev => ({ ...prev, tipe: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm"
+                    >
+                      <option value="masuk">Pemasukan (+)</option>
+                      <option value="keluar">Pengeluaran (-)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nominal (Rp)</label>
+                    <input 
+                      type="number"
+                      required
+                      value={newKeuangan.nominal}
+                      onChange={(e) => setNewKeuangan(prev => ({ ...prev, nominal: e.target.value }))}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm"
+                      placeholder="1000000"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    type="button"
+                    onClick={() => setIsAddKeuanganOpen(false)}
+                    className="w-1/2 py-2.5 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    className="w-1/2 py-2.5 bg-[#0B3B60] text-white font-bold text-xs rounded-xl shadow"
+                  >
+                    Simpan Catatan Kas
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL ADMIN ADD KETUA */}
+        {isAddKetuaOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-fadeIn">
+              <h3 className="text-xl font-bold font-serif text-slate-900">Tambah Sejarah Ketua (Admin PIC)</h3>
+              <form onSubmit={handleSaveKetua} className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Nama Lengkap Ketua</label>
+                  <input 
+                    type="text" required value={newKetua.nama}
+                    onChange={(e) => setNewKetua(p => ({ ...p, nama: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border rounded-xl" placeholder="Nama & Gelar"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block font-bold text-slate-700 uppercase mb-1">Periode</label>
+                    <input 
+                      type="text" required value={newKetua.periode}
+                      onChange={(e) => setNewKetua(p => ({ ...p, periode: e.target.value }))}
+                      className="w-full px-3 py-2 bg-slate-50 border rounded-xl" placeholder="2026 - 2027"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 uppercase mb-1">Status</label>
+                    <select
+                      value={newKetua.status}
+                      onChange={(e) => setNewKetua(p => ({ ...p, status: e.target.value }))}
+                      className="w-full px-3 py-2 bg-slate-50 border rounded-xl"
+                    >
+                      <option value="Menjabat">Menjabat</option>
+                      <option value="Demisioner">Demisioner</option>
+                      <option value="Alumni">Alumni</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Motto Kepemimpinan</label>
+                  <input 
+                    type="text" value={newKetua.motto}
+                    onChange={(e) => setNewKetua(p => ({ ...p, motto: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border rounded-xl" placeholder="Tulis motto..."
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Daftar Prestasi (Pisahkan Koma)</label>
+                  <input 
+                    type="text" value={newKetua.prestasiStr}
+                    onChange={(e) => setNewKetua(p => ({ ...p, prestasiStr: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border rounded-xl" placeholder="Prestasi 1, Prestasi 2"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase mb-1">Program Kerja (Pisahkan Koma)</label>
+                  <input 
+                    type="text" value={newKetua.prokerStr}
+                    onChange={(e) => setNewKetua(p => ({ ...p, prokerStr: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border rounded-xl" placeholder="Proker 1, Proker 2"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setIsAddKetuaOpen(false)} className="w-1/2 py-2 bg-slate-200 text-slate-700 font-bold rounded-xl">Batal</button>
+                  <button type="submit" className="w-1/2 py-2 bg-[#0B3B60] text-white font-bold rounded-xl shadow">Simpan Data</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        <footer className="bg-white border-t border-slate-200 py-6 px-8 text-center text-xs text-slate-500">
+          © {new Date().getFullYear()} IKA PMII Komisariat Wahid Hasyim UII. Portal Keuangan, Direktori Maps, & Kepemimpinan.
+        </footer>
+      </main>
+
+      {/* Inline styles for animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideLeft {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-slideLeft {
+          animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}} />
+    </div>
+  );
+}
